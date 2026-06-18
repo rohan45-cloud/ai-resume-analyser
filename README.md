@@ -312,3 +312,4 @@ Visit `http://localhost:3000`, register an account, upload a resume, and watch t
 ---
 
 Built with ❤️ as a complete, beginner-friendly, production-ready MERN + AI SaaS reference project.
+"# ai-resume-analyser" 
