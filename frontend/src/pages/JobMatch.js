@@ -8,7 +8,6 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const JobMatch = () => {
   const { id } = useParams();
-  const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [matching, setMatching] = useState(false);
   const [matchResult, setMatchResult] = useState(null);
@@ -18,12 +17,12 @@ const JobMatch = () => {
     const fetchAnalysis = async () => {
       try {
         const res = await api.get(`/resume/analysis/${id}`);
-        setAnalysis(res.data.analysis);
-        if (res.data.analysis.jobDescriptionMatch?.matchPercentage) {
-          setMatchResult(res.data.analysis.jobDescriptionMatch);
+        const analysis = res.data.analysis;
+        if (analysis.jobDescriptionMatch?.matchPercentage) {
+          setMatchResult(analysis.jobDescriptionMatch);
           setForm({
-            jobTitle: res.data.analysis.jobDescriptionMatch.jobTitle || '',
-            jobDescription: res.data.analysis.jobDescriptionMatch.jobDescription || '',
+            jobTitle: analysis.jobDescriptionMatch.jobTitle || '',
+            jobDescription: analysis.jobDescriptionMatch.jobDescription || '',
           });
         }
       } catch { toast.error('Could not load resume data'); }
