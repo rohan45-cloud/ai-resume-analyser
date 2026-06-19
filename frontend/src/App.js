@@ -18,23 +18,27 @@ import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import NotFound from './pages/NotFound';
 
-// Layout
+// Components
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
+
   if (loading) return <LoadingSpinner fullScreen />;
   if (!user) return <Navigate to="/login" replace />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/dashboard" replace />;
+
   return children;
 };
 
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
+
   if (loading) return <LoadingSpinner fullScreen />;
   if (user) return <Navigate to="/dashboard" replace />;
+
   return children;
 };
 
@@ -46,33 +50,113 @@ const AppLayout = ({ children, hideFooter = false }) => (
   </div>
 );
 
-function AppRoutes() {
+const AppRoutes = () => {
   return (
     <Routes>
-      {/* Public Pages */}
       <Route path="/" element={<AppLayout><Home /></AppLayout>} />
       <Route path="/about" element={<AppLayout><About /></AppLayout>} />
       <Route path="/contact" element={<AppLayout><Contact /></AppLayout>} />
-
-      {/* Auth Pages */}
-      <Route path="/login" element={<PublicRoute><AppLayout hideFooter><Login /></AppLayout></PublicRoute>} />
-      <Route path="/register" element={<PublicRoute><AppLayout hideFooter><Register /></AppLayout></PublicRoute>} />
-
-      {/* Protected Pages */}
-      <Route path="/dashboard" element={<ProtectedRoute><AppLayout hideFooter><Dashboard /></AppLayout></ProtectedRoute>} />
-      <Route path="/upload" element={<ProtectedRoute><AppLayout hideFooter><UploadResume /></AppLayout></ProtectedRoute>} />
-      <Route path="/results/:id" element={<ProtectedRoute><AppLayout hideFooter><ATSResult /></AppLayout></ProtectedRoute>} />
-      <Route path="/job-match/:id" element={<ProtectedRoute><AppLayout hideFooter><JobMatch /></AppLayout></ProtectedRoute>} />
-      <Route path="/history" element={<ProtectedRoute><AppLayout hideFooter><History /></AppLayout></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><AppLayout hideFooter><Profile /></AppLayout></ProtectedRoute>} />
-
-      {/* Admin */}
-      <Route path="/admin" element={<ProtectedRoute adminOnly><AppLayout hideFooter><AdminDashboard /></AppLayout></ProtectedRoute>} />
-
-      <Route path="*" element={<AppLayout><NotFound /></AppLayout>} />
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <AppLayout hideFooter>
+              <Login />
+            </AppLayout>
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicRoute>
+            <AppLayout hideFooter>
+              <Register />
+            </AppLayout>
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <AppLayout hideFooter>
+              <Dashboard />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/upload"
+        element={
+          <ProtectedRoute>
+            <AppLayout hideFooter>
+              <UploadResume />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/results/:id"
+        element={
+          <ProtectedRoute>
+            <AppLayout hideFooter>
+              <ATSResult />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/job-match/:id"
+        element={
+          <ProtectedRoute>
+            <AppLayout hideFooter>
+              <JobMatch />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/history"
+        element={
+          <ProtectedRoute>
+            <AppLayout hideFooter>
+              <History />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <AppLayout hideFooter>
+              <Profile />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute adminOnly>
+            <AppLayout hideFooter>
+              <AdminDashboard />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="*"
+        element={
+          <AppLayout>
+            <NotFound />
+          </AppLayout>
+        }
+      />
     </Routes>
   );
-}
+};
 
 function App() {
   return (
@@ -83,8 +167,17 @@ function App() {
           position="top-right"
           toastOptions={{
             duration: 4000,
-            style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' },
-            success: { iconTheme: { primary: '#2563eb', secondary: '#fff' } },
+            style: {
+              borderRadius: '12px',
+              fontFamily: 'Inter, sans-serif',
+              fontSize: '14px',
+            },
+            success: {
+              iconTheme: {
+                primary: '#2563eb',
+                secondary: '#ffffff',
+              },
+            },
           }}
         />
       </Router>

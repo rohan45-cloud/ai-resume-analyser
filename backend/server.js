@@ -13,50 +13,51 @@ const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
-// Security middleware
+// Security
 app.use(helmet());
 
-// Rate limiting
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: { success: false, message: 'Too many requests, please try again later.' }
-});
-app.use('/api/', limiter);
-
-// CORS
-const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
+// CORS (IMPORTANT)
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'http://localhost:3000'
+].filter(Boolean);
 
 app.use(cors({
-    origin: function(origin, callback) {
-        if (!origin || origin === allowedOrigin) {
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
 
-        if (
-            process.env.NODE_ENV !== 'production' &&
-            /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)
-        ) {
-            return callback(null, true);
-        }
-
-        return callback(new Error('Not allowed by CORS'));
+        console.log('Blocked Origin:', origin);
+        return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Body parsing
+app.options('*', cors());
+
+// Body Parser
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Logging
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV !== 'production') {
     app.use(morgan('dev'));
 }
 
-// Static files
+// Rate Limit
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100
+});
+
+app.use('/api/', limiter);
+
+// Static Files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
@@ -64,16 +65,15 @@ app.use('/api/auth', authRoutes);
 app.use('/api/resume', resumeRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Health check
+// Health
 app.get('/api/health', (req, res) => {
     res.json({
         success: true,
-        message: 'AI Resume Analyzer API is running',
-        timestamp: new Date().toISOString()
+        message: 'Server running'
     });
 });
 
-// 404 handler
+// 404
 app.use('*', (req, res) => {
     res.status(404).json({
         success: false,
@@ -81,39 +81,29 @@ app.use('*', (req, res) => {
     });
 });
 
-// Error handler
+// Error Handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error(err);
 
-    res.status(err.statusCode || 500).json({
+    res.status(500).json({
         success: false,
-        message: err.message || 'Internal Server Error',
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+        message: err.message
     });
 });
 
-// MongoDB Connection
-console.log("Mongo URI:", process.env.MONGO_URI);
-
-if (!process.env.MONGO_URI) {
-    console.error("❌ MONGO_URI missing in .env file");
-    process.exit(1);
-}
-
+// MongoDB
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
-        console.log('✅ MongoDB Connected Successfully');
+        console.log('MongoDB Connected');
 
         const PORT = process.env.PORT || 5000;
 
         app.listen(PORT, () => {
-            console.log(`🚀 Server running on port ${PORT}`);
-            console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+            console.log(`Server running on ${PORT}`);
+            console.log('Frontend URL:', process.env.FRONTEND_URL);
         });
     })
-    .catch((err) => {
-        console.error('❌ MongoDB Connection Error:', err.message);
+    .catch(err => {
+        console.error(err);
         process.exit(1);
     });
-
-module.exports = app;
